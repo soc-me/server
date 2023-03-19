@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PostController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -24,16 +25,14 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 
-// Auth test
-Route::get('/posts', function(Request $request)
-{
-    $user = Auth::check();
-    // if user is not logged in return 401
-    if (!$user) {
-        return response('Unauthorized.', 401);
-    }
-    $response = [
-        'posts' => Post::all()
-    ];
-    return response($response, 200);
+// Post Routes
+Route::prefix('post')->group(function(){
+    Route::controller(PostController::class)->group(function(){
+        Route::get('/test', 'test')->name('post_test');
+        Route::get('/all', 'index')->name('post_all');
+        Route::get('/{id}', 'show')->name('post_show');
+        Route::post('/create', 'store')->middleware('auth:sanctum')->name('post_create');
+        Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('post_update');
+        Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('post_delete');
+    });
 });
