@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('Text');
-            $table->timestamps();
-            $table->foreignId('createdByUser_Key')->constrained('users', 'id')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         });
     }
 
@@ -27,3 +26,6 @@ return new class extends Migration
         Schema::dropIfExists('posts');
     }
 };
+
+//laravl command to run migrations: php artisan migrate
+
