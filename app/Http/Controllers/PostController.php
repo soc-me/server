@@ -25,7 +25,7 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'text' => ['required', 'string', 'max:500'],
+            'content' => ['required', 'string', 'max:500'],
         ]);
         $fields['userID'] = Auth::user()->id;
         $postObject = Post::create($fields);
@@ -60,9 +60,9 @@ class PostController extends Controller
         }
         //Updating the table
         $fields = $request->validate([
-            'text' => ['required', 'string', 'max:500']
+            'content' => ['required', 'string', 'max:500']
         ]);  
-        $postObject['text'] = $fields['text'];
+        $postObject['content'] = $fields['content'];
         $postObject->save();
         $response = [
             'status' => 'OK',
