@@ -6,6 +6,7 @@ use App\Models\Post;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\UserController;
 
 class PostController extends Controller
 {
@@ -14,13 +15,9 @@ class PostController extends Controller
      */
     public function index()
     {
-        $postObjects = Post::all();
-        //iterate through each post object and find the username of the user who created it. Then add it to the main object  using a count
-        $count = 0;
-        foreach($postObjects as $postObject){
-            $postObjects[$count]['name'] = $postObject->BelongsToUser()->value('name');
-            $count++;
-        }
+        $postObjects = Post::orderBy('created_at', 'desc')->get();
+        $userController = new UserController();
+        $postObjects = $userController->addUserData($postObjects);
         $response = [
             'posts' => $postObjects
         ];
@@ -37,9 +34,11 @@ class PostController extends Controller
         ]);
         $fields['user_id'] = Auth::user()->id;
         $postObject = Post::create($fields);
+        $userController = new UserController();
+        $postObjects = $userController->addUserData([$postObject]);  // this function requires an array
         $response = [
             'status'=> 'OK',
-            'postObject'=> $postObject
+            'postObject'=> $postObjects[0]
         ];
         return response($response, 200);
     }

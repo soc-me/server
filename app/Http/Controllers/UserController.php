@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -44,5 +45,17 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    //Add user data to objects
+    public function addUserData($objects)
+    {
+        $count = 0;
+        foreach ($objects as $object) {
+            // add the 'name' of the user to the object by using the 'user_id' of the object
+            $objects[$count]['name'] = User::find($object['user_id'])->name;
+            $count++;
+        }
+        return $objects;
     }
 }
