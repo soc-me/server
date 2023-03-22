@@ -35,7 +35,7 @@ class PostController extends Controller
         $fields = $request->validate([
             'content' => ['required', 'string', 'max:500'],
         ]);
-        $fields['userID'] = Auth::user()->id;
+        $fields['user_id'] = Auth::user()->id;
         $postObject = Post::create($fields);
         $response = [
             'status'=> 'OK',
