@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,8 +14,15 @@ class PostController extends Controller
      */
     public function index()
     {
+        $postObjects = Post::all();
+        //iterate through each post object and find the username of the user who created it. Then add it to the main object  using a count
+        $count = 0;
+        foreach($postObjects as $postObject){
+            $postObjects[$count]['name'] = $postObject->BelongsToUser()->value('name');
+            $count++;
+        }
         $response = [
-            'posts' => Post::all()
+            'posts' => $postObjects
         ];
         return response($response, 200);
     }
