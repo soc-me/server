@@ -3,6 +3,7 @@
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -45,4 +46,16 @@ Route::prefix('like')->controller(LikeController::class)->group(function(){
     Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('like_update');
     Route::delete('/delete/{userID}', 'destroy')->middleware('auth:sanctum')->name('like_delete');
     Route::delete('/likesonpost/{postID}', 'likesOnPost')->name('likes_on_post');
+});
+
+// User routes
+Route::prefix('user')->group(function(){
+    Route::controller(UserController::class)->group(function(){
+        Route::get('/all', 'index')->name('user_all');
+        Route::get('/{id}', 'show')->name('user_show');
+        Route::get('/minimal/{id}', 'showMinimal')->name('user_show_minimal');
+        Route::post('/create', 'store')->name('user_create');
+        Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('user_update');
+        Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('user_delete');
+    });
 });

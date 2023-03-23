@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('isAdmin')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('bio')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

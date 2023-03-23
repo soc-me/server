@@ -31,6 +31,23 @@ class UserController extends Controller
         //
     }
 
+    // Show the specified resource with minimal data
+    public function showMinimal(string $id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response(['message' => 'User not found'], 404);
+        }
+        // todo: get followers and following
+        $response = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'created_at' => $user->created_at,
+            'bio' => $user->bio,
+        ];
+        return response($response, 200);
+    }
+
     /**
      * Update the specified resource in storage.
      */
