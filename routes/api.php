@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
@@ -59,4 +60,18 @@ Route::prefix('user')->group(function(){
         Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('user_update');
         Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('user_delete');
     });
+});
+
+//Follow routes
+Route::prefix('follow')->controller(FollowController::class)->group(function(){
+    Route::get('/all', 'index')->name('follow_all');
+    Route::get('/status/{to_user_id}', 'show')->middleware('auth:sanctum')->name('follow_show');
+    Route::post('/create/{to_user_id}', 'store')->middleware('auth:sanctum')->name('follow_create');
+    Route::delete('/delete/{to_user_id}', 'destroy')->middleware('auth:sanctum')->name('follow_delete');
+    Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('follow_update');
+    Route::get('/followers/{id}', 'followers')->name('followers');
+    Route::get('/following/{id}', 'following')->name('following');
+    Route::get('/requests/{id}', 'requests')->name('requests');
+    Route::put('/accept/{id}', 'accept')->middleware('auth:sanctum')->name('accept');
+    Route::put('/reject/{id}', 'reject')->middleware('auth:sanctum')->name('reject');
 });
