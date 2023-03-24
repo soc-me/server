@@ -35,6 +35,7 @@ Route::prefix('post')->group(function(){
         Route::post('/create', 'store')->middleware('auth:sanctum')->name('post_create');
         Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('post_update');
         Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('post_delete');
+        Route::get('/user/{id}', 'postsByUser')->name('posts_by_user');
     });
 });
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
+use App\Models\User;
 
 class PostController extends Controller
 {
@@ -101,6 +102,19 @@ class PostController extends Controller
     public function test(Request $request){
         $response = [
             'status' => 'OK'
+        ];
+        return response($response, 200);
+    }
+
+    //Get posts of user
+    public function postsByUser(string $id){
+        $userObject = User::find($id);
+        $postObjects = $userObject->postList()->orderBy('created_at', 'desc')->get();
+        $userController = new UserController();
+        $postObjects = $userController->addUserData($postObjects);
+        $response = [
+            'postObjects' => $postObjects,
+            'private' => false
         ];
         return response($response, 200);
     }
