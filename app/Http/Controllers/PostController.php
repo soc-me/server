@@ -20,7 +20,7 @@ class PostController extends Controller
         $userController = new UserController();
         $postObjects = $userController->addUserData($postObjects);
         $response = [
-            'posts' => $postObjects
+            'postObjects' => $postObjects
         ];
         return response($response, 200);
     }
@@ -31,7 +31,7 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'content' => ['required', 'string', 'max:500'],
+            'content' => ['required', 'string'],
         ]);
         $fields['user_id'] = Auth::user()->id;
         $postObject = Post::create($fields);
@@ -115,6 +115,23 @@ class PostController extends Controller
         $response = [
             'postObjects' => $postObjects,
             'private' => false
+        ];
+        return response($response, 200);
+    }
+
+    // following users posts
+    public function followingPosts(Request $request){
+        $userObject = Auth::user();
+        $followingObjects = $userObject->followingList()->get();   // this returns a list of follow objects not user objects
+        // table join
+        $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+            ->whereIn('users.id', $followingObjects->pluck('to_user_id'))
+            ->orderBy('posts.created_at', 'desc')
+            ->get();
+        $userController = new UserController();
+        $postObjects = $userController->addUserData($postObjects);
+        $response = [
+            'postObjects' => $postObjects,
         ];
         return response($response, 200);
     }

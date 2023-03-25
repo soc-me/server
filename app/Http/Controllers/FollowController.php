@@ -37,7 +37,7 @@ class FollowController extends Controller
         $follow->accepted = True;
         $follow->save();
         return response()->json([
-            'completion' => True
+            'response' => 'following'  //change to 'null' 
         ], 200);
     }
 
@@ -54,8 +54,7 @@ class FollowController extends Controller
         $followObject->accepted = True;
         $followObject->save();
         return response()->json([
-            'requested' => True,
-            'isFollowing' =>  1
+            'response' => 'following'
         ], 200);
     }
 
@@ -70,14 +69,18 @@ class FollowController extends Controller
             ->first();
         if(!$followObject){
             return response()->json([
-                'requested' => False,
-                'isFollowing' =>  null
+                'resopnse' => 'null'  // null is when the user is not following and has not requested to follow
             ], 200);
         }
-        return response()->json([
-            'requested' => True,
-            'isFollowing' => $followObject->accepted
-        ], 200);
+        if($followObject->accepted == True){
+            return response()->json([
+                'response' => 'following'
+            ], 200);
+        }else{
+            return response()->json([
+                'response' => 'requested'
+            ], 200);
+        }
     }
 
     /**
@@ -102,8 +105,7 @@ class FollowController extends Controller
         }
         $followObject->delete();
         return response()->json([
-            'requested' => True,
-            'isFollowing' =>  0
+            'response' => "null"
         ], 200);
     }
 }
