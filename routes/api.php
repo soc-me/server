@@ -58,7 +58,7 @@ Route::prefix('user')->group(function(){
         Route::get('/{id}', 'show')->name('user_show');
         Route::get('/minimal/{id}', 'showMinimal')->name('user_show_minimal');
         Route::post('/create', 'store')->name('user_create');
-        Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('user_update');
+        Route::post('/update/{id}', 'update')->middleware('auth:sanctum')->name('user_update');
         Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('user_delete');
     });
 });

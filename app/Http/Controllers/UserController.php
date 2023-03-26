@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class UserController extends Controller
 {
@@ -20,7 +22,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // REFER: AUTH/REGISTER
     }
 
     /**
@@ -28,7 +30,7 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        //REFER: /USER
     }
 
     // Show the specified resource with minimal data
@@ -44,6 +46,7 @@ class UserController extends Controller
             'name' => $user->name,
             'created_at' => $user->created_at,
             'bio' => $user->bio,
+            'imageURL' => $user->imageURL,
         ];
         return response($response, 200);
     }
@@ -53,7 +56,34 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        //make sure that current user is the user that is being updated
+        if ($id != Auth::user()->id) {
+            return response(['message' => 'Unauthorized'], 401);
+        }
+        $fields = $request->validate([
+            'bio' => ['string', 'max:500'],
+            'image' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+        ]);
+        $user = User::find($id);
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            // $image = Image::make($image->getRealPath());
+            // $image->resize(300, 300, function ($constraint) {
+            //     $constraint->aspectRatio();
+            // });
+            $name = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('/public/user/');
+            $image->move($destinationPath, $name);
+            $fields['imageURL'] = '/public/user/' . $name;
+            $user->imageURL = $fields['imageURL'];
+        }
+        $extra = [];
+        if (isset($fields['bio'])) {
+            $user->bio = $fields['bio'];
+            $extra['bio'] = $fields['bio'];
+        }
+        $user->save();
+        return response(['message' => 'User updated', 'extra' => $fields], 200);
     }
 
     /**
@@ -71,6 +101,7 @@ class UserController extends Controller
         foreach ($objects as $object) {
             // add the 'name' of the user to the object by using the 'user_id' of the object
             $objects[$count]['name'] = User::find($object['user_id'])->name;
+            $objects[$count]['imageURL'] = User::find($object['user_id'])->imageURL;
             $count++;
         }
         return $objects;
