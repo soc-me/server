@@ -126,8 +126,10 @@ class PostController extends Controller
         // table join
         $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
             ->whereIn('users.id', $followingObjects->pluck('to_user_id'))
+            ->select('posts.*')
             ->orderBy('posts.created_at', 'desc')
             ->get();
+            // join function arguments: table name, column name, operator, column name
         $userController = new UserController();
         $postObjects = $userController->addUserData($postObjects);
         $response = [
