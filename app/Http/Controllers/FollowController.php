@@ -35,7 +35,7 @@ class FollowController extends Controller
         $follow = new Follow();
         $follow->to_user_id = $to_user_id;
         $follow->from_user_id = $from_user_id;
-        $follow->accepted = True;
+        $follow->accepted = True;  //remove
         $follow->save();
         // recalculate the follower and following count of the users
         $this->followCalculator($follow->to_user_id);
@@ -114,10 +114,11 @@ class FollowController extends Controller
                 'message' => 'Does not exists'
             ], 404);
         }
+        // delete first!
+        $followObject->delete();
         // recalculate the follower and following count of the users
         $this->followCalculator($followObject->to_user_id);
         $this->followCalculator($followObject->from_user_id);
-        $followObject->delete();
         //response
         return response()->json([
             'response' => "null",
