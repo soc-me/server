@@ -37,9 +37,9 @@ class FollowController extends Controller
         $follow->from_user_id = $from_user_id;
         $follow->accepted = True;  //remove
         $follow->save();
-        // recalculate the follower and following count of the users
-        $this->followCalculator($follow->to_user_id);
-        $this->followCalculator($follow->from_user_id);
+        // recalculate the follower and following count of the users -> removed since will be calculated on the fly
+        // $this->followCalculator($follow->to_user_id);
+        // $this->followCalculator($follow->from_user_id);
         //temp =====
         return response()->json([
             'response' => 'following'  //change to 'null' 
@@ -58,9 +58,9 @@ class FollowController extends Controller
         }
         $followObject->accepted = True;
         $followObject->save();
-        // recalculate the follower and following count of the users
-        $this->followCalculator($followObject->to_user_id);
-        $this->followCalculator($followObject->from_user_id);
+        // recalculate the follower and following count of the users  -> removed since will be calculated on the fly
+        // $this->followCalculator($followObject->to_user_id);
+        // $this->followCalculator($followObject->from_user_id);
         //response
         return response()->json([
             'response' => 'following'
@@ -116,9 +116,9 @@ class FollowController extends Controller
         }
         // delete first!
         $followObject->delete();
-        // recalculate the follower and following count of the users
-        $this->followCalculator($followObject->to_user_id);
-        $this->followCalculator($followObject->from_user_id);
+        // recalculate the follower and following count of the users -> removed since will be calculated on the fly
+        // $this->followCalculator($followObject->to_user_id);
+        // $this->followCalculator($followObject->from_user_id);
         //response
         return response()->json([
             'response' => "null",
@@ -126,10 +126,10 @@ class FollowController extends Controller
     }
 
     //helper function: recalculate the follower and following count of a user
-    public function followCalculator(string $user_id){
-        $userObject = User::find($user_id);
-        $userObject->followerCount = Follow::where('to_user_id', $user_id)->count();
-        $userObject->followingCount = Follow::where('from_user_id', $user_id)->count();
-        $userObject->save();
+    public function followers_Calculator(string $user_id){
+        return Follow::where('to_user_id', $user_id)->count();
+    }
+    public function following_Calculator(string $user_id){
+        return Follow::where('from_user_id', $user_id)->count();
     }
 }

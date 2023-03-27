@@ -40,15 +40,16 @@ class UserController extends Controller
         if (!$user) {
             return response(['message' => 'User not found'], 404);
         }
-        // todo: get followers and following
+        // get followers and following
+        $followController = new FollowController();
         $response = [
             'id' => $user->id,
             'name' => $user->name,
             'created_at' => $user->created_at,
             'bio' => $user->bio,
             'imageURL' => $user->imageURL,
-            'followers' => $user->followerCount,
-            'following' => $user->followingCount,
+            'followers' => $followController->followers_Calculator($id),
+            'following' => $followController->following_Calculator($id),
         ];
         return response($response, 200);
     }

@@ -47,8 +47,8 @@ Route::prefix('like')->controller(LikeController::class)->group(function(){
     Route::get('/{id}', 'show')->name('like_show');
     Route::post('/create', 'store')->middleware('auth:sanctum')->name('like_create');
     Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('like_update');
-    Route::delete('/delete/{userID}', 'destroy')->middleware('auth:sanctum')->name('like_delete');
-    Route::delete('/likesonpost/{postID}', 'likesOnPost')->name('likes_on_post');
+    Route::delete('/delete/{postID}', 'destroy')->middleware('auth:sanctum')->name('like_delete');
+    Route::get('/userliked/{postID}', 'userliked')->middleware('auth:sanctum')->name('user_liked');
 });
 
 // User routes

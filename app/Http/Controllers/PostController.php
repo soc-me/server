@@ -20,6 +20,16 @@ class PostController extends Controller
         $postObjects = Post::orderBy('created_at', 'desc')->get();
         $userController = new UserController();
         $postObjects = $userController->addUserData($postObjects);
+        foreach($postObjects as $postObject){
+            // get the like count of each post
+            $likeController = new LikeController();
+            $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+            // if the user is logged in, check if the posts are liked by the user
+            if(Auth::user()){
+                $userObject = Auth::user();
+                $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
+            }
+        }
         $response = [
             'postObjects' => $postObjects
         ];
@@ -114,6 +124,12 @@ class PostController extends Controller
         $postObjects = $userObject->postList()->orderBy('created_at', 'desc')->get();
         $userController = new UserController();
         $postObjects = $userController->addUserData($postObjects);
+        // checks whether the user has liked the post and adds the like count
+        $likeController = new LikeController();
+        foreach($postObjects as $postObject){
+            $postObject['liked'] = $likeController->likeCheck($postObject->id, $id);
+            $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+        }     
         $response = [
             'postObjects' => $postObjects,
             'private' => false
@@ -134,6 +150,13 @@ class PostController extends Controller
             // join function arguments: table name, column name, operator, column name
         $userController = new UserController();
         $postObjects = $userController->addUserData($postObjects);
+        // checks whether the user has liked the post and adds the like count
+        $userObject = Auth::user();
+        $likeController = new LikeController();
+        foreach($postObjects as $postObject){
+            $postObject['liked'] = $likeController->likeCheck( $postObject->id, $userObject->id);
+            $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+        }
         $response = [
             'postObjects' => $postObjects,
         ];
