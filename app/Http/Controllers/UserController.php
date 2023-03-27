@@ -47,6 +47,8 @@ class UserController extends Controller
             'created_at' => $user->created_at,
             'bio' => $user->bio,
             'imageURL' => $user->imageURL,
+            'followers' => $user->followerCount,
+            'following' => $user->followingCount,
         ];
         return response($response, 200);
     }

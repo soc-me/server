@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Follow;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,6 +37,14 @@ class FollowController extends Controller
         $follow->from_user_id = $from_user_id;
         $follow->accepted = True;
         $follow->save();
+        //temp ====
+        $followTo_userObject = User::find($follow->to_user_id);
+        $follorFrom_userObject = User::find($follow->from_user_id);
+        $followTo_userObject->followerCount += 1;
+        $followTo_userObject->save();
+        $follorFrom_userObject->followingCount += 1;
+        $follorFrom_userObject->save();
+        //temp =====
         return response()->json([
             'response' => 'following'  //change to 'null' 
         ], 200);
@@ -53,6 +62,14 @@ class FollowController extends Controller
         }
         $followObject->accepted = True;
         $followObject->save();
+        // increasing the number of followers on the 'follow_to' user and the number of following on the 'follow_from' user
+        $followTo_userObject = User::find($followObject->to_user_id);
+        $follorFrom_userObject = User::find($followObject->from_user_id);
+        $followTo_userObject->followerCount += 1;
+        $followTo_userObject->save();
+        $follorFrom_userObject->followingCount += 1;
+        $follorFrom_userObject->save();
+        //response
         return response()->json([
             'response' => 'following'
         ], 200);
@@ -103,7 +120,15 @@ class FollowController extends Controller
                 'message' => 'Does not exists'
             ], 404);
         }
+        // decreasing the number of followers on the 'follow_to' user and the number of following on the 'follow_from' user
+        $followTo_userObject = User::find($followObject->to_user_id);
+        $follorFrom_userObject = User::find($followObject->from_user_id);
+        $followTo_userObject->followerCount -= 1;
+        $followTo_userObject->save();
+        $follorFrom_userObject->followingCount -= 1;
+        $follorFrom_userObject->save();
         $followObject->delete();
+        //response
         return response()->json([
             'response' => "null"
         ], 200);
