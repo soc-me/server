@@ -22,21 +22,20 @@ class LikeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, string $postID)
     {
-        $fields = $request->validate([
-            'post_id'=> 'required',
-        ]);
-        $fields['user_id'] = $request->user()->id;
         //checking whether a like already exists
-        $likeObject = Like::where('user_id', $fields['user_id'])->where('post_id', $fields['post_id'])->first();
+        $likeObject = Like::where('user_id', Auth::user()->id)->where('post_id', $postID)->first();
         if($likeObject){
             return response([
                 'status' => 'duplicate'
             ], 201);
         }
         //else 
-        $likeObject = Like::create($fields);
+        $likeObject = Like::create([
+            'user_id' => Auth::user()->id,
+            'post_id' => $postID
+        ]);
         // calculate likes on the post  -> removed since will be calculated on the fly
         // $this->calculateLikes($fields['post_id']);
         return response([

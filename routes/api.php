@@ -45,7 +45,7 @@ Route::prefix('post')->group(function(){
 Route::prefix('like')->controller(LikeController::class)->group(function(){
     Route::get('/all', 'index')->name('like_all');
     Route::get('/{id}', 'show')->name('like_show');
-    Route::post('/create', 'store')->middleware('auth:sanctum')->name('like_create');
+    Route::post('/create/{postID}', 'store')->middleware('auth:sanctum')->name('like_create');
     Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('like_update');
     Route::delete('/delete/{postID}', 'destroy')->middleware('auth:sanctum')->name('like_delete');
     Route::get('/userliked/{postID}', 'userliked')->middleware('auth:sanctum')->name('user_liked');
