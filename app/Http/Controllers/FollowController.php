@@ -37,13 +37,9 @@ class FollowController extends Controller
         $follow->from_user_id = $from_user_id;
         $follow->accepted = True;
         $follow->save();
-        //temp ====
-        $followTo_userObject = User::find($follow->to_user_id);
-        $follorFrom_userObject = User::find($follow->from_user_id);
-        $followTo_userObject->followerCount += 1;
-        $followTo_userObject->save();
-        $follorFrom_userObject->followingCount += 1;
-        $follorFrom_userObject->save();
+        // recalculate the follower and following count of the users
+        $this->followCalculator($follow->to_user_id);
+        $this->followCalculator($follow->from_user_id);
         //temp =====
         return response()->json([
             'response' => 'following'  //change to 'null' 
@@ -62,13 +58,9 @@ class FollowController extends Controller
         }
         $followObject->accepted = True;
         $followObject->save();
-        // increasing the number of followers on the 'follow_to' user and the number of following on the 'follow_from' user
-        $followTo_userObject = User::find($followObject->to_user_id);
-        $follorFrom_userObject = User::find($followObject->from_user_id);
-        $followTo_userObject->followerCount += 1;
-        $followTo_userObject->save();
-        $follorFrom_userObject->followingCount += 1;
-        $follorFrom_userObject->save();
+        // recalculate the follower and following count of the users
+        $this->followCalculator($followObject->to_user_id);
+        $this->followCalculator($followObject->from_user_id);
         //response
         return response()->json([
             'response' => 'following'
@@ -114,23 +106,29 @@ class FollowController extends Controller
     public function destroy(Request $request, string $to_user_id)
     {
         $from_user_id = Auth::user()->id;
-        $followObject = Follow::where('from_user_id', $from_user_id);
+        $followObject = Follow::where('from_user_id', $from_user_id)
+            ->where('to_user_id', $to_user_id)
+            ->first();
         if(!$followObject){
             return response()->json([
                 'message' => 'Does not exists'
             ], 404);
         }
-        // decreasing the number of followers on the 'follow_to' user and the number of following on the 'follow_from' user
-        $followTo_userObject = User::find($followObject->to_user_id);
-        $follorFrom_userObject = User::find($followObject->from_user_id);
-        $followTo_userObject->followerCount -= 1;
-        $followTo_userObject->save();
-        $follorFrom_userObject->followingCount -= 1;
-        $follorFrom_userObject->save();
+        // recalculate the follower and following count of the users
+        $this->followCalculator($followObject->to_user_id);
+        $this->followCalculator($followObject->from_user_id);
         $followObject->delete();
         //response
         return response()->json([
-            'response' => "null"
+            'response' => "null",
         ], 200);
+    }
+
+    //helper function: recalculate the follower and following count of a user
+    public function followCalculator(string $user_id){
+        $userObject = User::find($user_id);
+        $userObject->followerCount = Follow::where('to_user_id', $user_id)->count();
+        $userObject->followingCount = Follow::where('from_user_id', $user_id)->count();
+        $userObject->save();
     }
 }
