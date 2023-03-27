@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
+use App\Models\Follow;
 use App\Models\User;
 
 class PostController extends Controller
@@ -34,6 +35,7 @@ class PostController extends Controller
             'content' => ['required', 'string'],
         ]);
         $fields['user_id'] = Auth::user()->id;
+        $fields['likeCount'] = 0;
         $postObject = Post::create($fields);
         $userController = new UserController();
         $postObjects = $userController->addUserData([$postObject]);  // this function requires an array
@@ -122,7 +124,7 @@ class PostController extends Controller
     // following users posts
     public function followingPosts(Request $request){
         $userObject = Auth::user();
-        $followingObjects = $userObject->followingList()->get();   // this returns a list of follow objects not user objects
+        $followingObjects = Follow::where('from_user_id', $userObject->id)->get();
         // table join
         $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
             ->whereIn('users.id', $followingObjects->pluck('to_user_id'))
