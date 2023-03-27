@@ -36,9 +36,11 @@ class LikeController extends Controller
         }
         //else 
         $likeObject = Like::create($fields);
+        // calculate likes on the post
+        $this->calculateLikes($fields['post_id']);
         return response([
             'likeObject' => $likeObject
-        ], 201);
+        ], 200);
     }
 
     /**
@@ -66,6 +68,8 @@ class LikeController extends Controller
     {
         $likeObject = Like::where('user_id', $userID)->first();
         $likeObject->delete();
+        // calculate likes on the post
+        $this->calculateLikes($likeObject->post_id);
         return response([
             'status' => 'deleted'
         ], 200);
@@ -78,5 +82,13 @@ class LikeController extends Controller
         return response([
             'likeObjects' => $likeObjects
         ], 200);
+    }
+
+    //helper function: calculate likes on a post
+    public function calculateLikes(string $postID)
+    {
+        $postObject = Post::find($postID);
+        $postObject->likeCount = Like::where('post_id', $postID)->count();
+        $postObject->save();
     }
 }
