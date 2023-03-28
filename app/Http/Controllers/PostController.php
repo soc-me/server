@@ -13,7 +13,7 @@ use App\Models\User;
 class PostController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Returns all necessary data for the home page ================================================
      */
     public function index()
     {
@@ -34,7 +34,7 @@ class PostController extends Controller
                 ->where('accepted', True)
                 ->select('to_user_id')
                 ->get();
-            // get the following accoutns
+            // get the following accounts
             $followingAccounts = User::whereIn('id', $followingObjects->pluck('to_user_id'))->get();
             // get posts of these accounts + current users posts
             $allRequiredAccounts = $publicAccounts->merge($followingAccounts);
@@ -58,7 +58,6 @@ class PostController extends Controller
                 $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
             }
         }
-
         //response
         $response = [
             'postObjects' => $postObjects
@@ -67,7 +66,7 @@ class PostController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage. ================================================
      */
     public function store(Request $request)
     {
@@ -91,18 +90,55 @@ class PostController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource. ================================================
      */
-    public function show(string $id)
+    public function show(string $post_ID)
     {
-        $reponse = [
-            'postData' => Post::find($id)
+        //find post id
+        $postObject = Post::find($post_ID);
+        // find user who created the post
+        $userObject = User::find($postObject->user_id);
+        // current user
+        $currUserObject = Auth::user();
+        // user perms check
+        if($userObject->is_private && $userObject !== $currUserObject){
+            // if private and the user is not logged in return an err
+            if(!$currUserObject){
+                $reponse  = [
+                    'notAllowed' => true,
+                    'message' => 'You are not logged in'
+                ];
+                return response($reponse, 401);
+            }
+            $followObject = Follow::where('from_user_id', $currUserObject->id)
+                ->where('to_user_id', $userObject->id)
+                ->where('accepted', True)
+                ->first();
+            // if a follow object is not found, return an err
+            if(!$followObject){
+                $reponse  = [
+                    'notAllowed' => true,
+                    'message' => 'You are not following this user'
+                ];
+                return response($reponse, 200);
+            }
+        }
+        // add meta data
+        $userController = new UserController();
+        $likeController = new LikeController();
+        $postObject = $userController->addUserData([$postObject])[0];
+        $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+        if($currUserObject){
+            $postObject['liked'] = $likeController->likeCheck($postObject->id, $currUserObject->id);
+        }
+        $response = [
+            'postObject' => $postObject
         ];
-        return response($reponse, 200);
+        return response($response, 200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage. ================================================   
      */
     public function update(Request $request, string $id)
     {
@@ -126,7 +162,7 @@ class PostController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage. ================================================
      */
     public function destroy(string $id)
     {
@@ -144,21 +180,25 @@ class PostController extends Controller
         return response($response, 200);
     }
 
-    // Test function
-    public function test(Request $request){
-        $response = [
-            'status' => 'OK'
-        ];
-        return response($response, 200);
-    }
-
-    //Get posts of user
+    /**
+     * Get all the posts of a user ================================================
+     */
     public function postsByUser(string $id){
         $userObject = User::find($id);
-        // checks whether the user is private and if the user is following the user
         $currUserObject = Auth::user();
         if($userObject->is_private && $currUserObject !== $userObject){
-            $followObject = Follow::where('from_user_id', $currUserObject->id)->where('to_user_id', $id)->where('accepted', True)->first();
+            // if the user is not logged in, return an err
+            if(!$currUserObject){
+                $response = [
+                    'notAllowed' => true,
+                ];
+                return response($response, 401);
+            }
+            // if the user is not following the user, return an err
+            $followObject = Follow::where('from_user_id', $currUserObject->id)
+                ->where('to_user_id', $id)
+                ->where('accepted', True)
+                ->first();
             if(!$followObject){
                 $response = [
                     'notAllowed' => true,
@@ -167,33 +207,36 @@ class PostController extends Controller
             }
         }
         $postObjects = $userObject->postList()->orderBy('created_at', 'desc')->get();
+        // add meta data
         $userController = new UserController();
-        $postObjects = $userController->addUserData($postObjects);
-        // checks whether the user has liked the post and adds the like count
         $likeController = new LikeController();
+        $postObjects = $userController->addUserData($postObjects);
         foreach($postObjects as $postObject){
-            $postObject['liked'] = $likeController->likeCheck($postObject->id, $id);
+            if($currUserObject){
+                $postObject['liked'] = $likeController->likeCheck($postObject->id, $currUserObject->id);
+            }
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
         }     
         $response = [
             'postObjects' => $postObjects,
-            'notAllowed' => false
         ];
         return response($response, 200);
     }
 
-    // following users posts
+    /**
+     * Get following user's posts ================================================
+     */
     public function followingPosts(Request $request){
         $userObject = Auth::user();
         // getting the following users
         $followingObjects = Follow::where('from_user_id', $userObject->id)
             ->where('accepted', True)
             ->get();
-        // getting the user objects of the following users
+        // getting the user objects from the following objects
         $followingUserObjects = User::whereIn('id', $followingObjects->pluck('to_user_id'))->get();
         //adding the current user to the list
         $followingUserObjects->push($userObject);
-        // table join
+        // getting the posts of the following users + the current user
         $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
             ->whereIn('users.id', $followingUserObjects->pluck('id'))
             ->select('posts.*')
@@ -213,46 +256,42 @@ class PostController extends Controller
         return response($response, 200);
     }
 
-    // Show minimal post data
+    /**
+     * Returns minimal data about a post if private (for SEO) ================================================
+     */
     public function showMinimal(Request $request, string $post_ID)
     {
         // find post with post id
         $postObject = Post::where('id', $post_ID)->first();
-        // check whether the user is private and if the user is following the user
+        // if the post does not exist, return a message saying that the post does not exist
+        if(!$postObject){
+            $response = [
+                'postObject' => null,
+                'is_private' => null,
+            ];
+            return response($response, 404);
+        }
+        // find user with user id
         $userObject = User::where('id', $postObject->user_id)->first();
-        if($userObject->is_private){
-            $currUserObject = Auth::user();
-            if(!$currUserObject){
-                $response = [
-                    'notAllowed' => true,
-                ];
-                return response($response, 200);
-            }
-            // check whether a follow objects exists
-            $followObject = Follow::where('from_user_id', $currUserObject->id)
-                ->where('to_user_id', $userObject->id)
-                ->where('accepted', True)
-                ->first();
-            if(!$followObject){
-                $response = [
-                    'notAllowed' => true,
-                ];
-                return response($response, 200);
-            }
+        // if the users account is not private, return the post
+        if(!$userObject->is_private){
+            // add meta data
+            $userController = new UserController();
+            $postObject = $userController->addUserData([$postObject])[0];
+            $likeController = new LikeController();
+            $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+            $response = [
+                'postObject' => $postObject,
+                'is_private' => false,
+            ];
+            return response($response, 200);
+        }else{
+            //return a message saying that the post is private
+            $response = [
+                'postObject' => null,
+                'is_private' => true,
+            ];
         }
-        // if not or if the user is following the user, add the meta data
-        $userController = new UserController();
-        $likeController = new LikeController();
-        $postObject = $userController->addUserData([$postObject])[0];  
-        $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
-        $currUserObject = Auth::user();
-        if($currUserObject){
-            $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
-        }
-        //response
-        $response = [
-            'postObject' => $postObject
-        ];
         return response($response, 200);
     }
 }

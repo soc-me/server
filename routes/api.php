@@ -33,7 +33,7 @@ Route::prefix('post')->group(function(){
     Route::controller(PostController::class)->group(function(){
         Route::get('/all', 'index')->name('post_all');
         Route::get('/following', 'followingPosts')->middleware('auth:sanctum')->name('following_posts');
-        Route::get('/{id}', 'show')->name('post_show');
+        Route::get('/complete/{post_ID}', 'show')->name('post_show');
         Route::post('/create', 'store')->middleware('auth:sanctum')->name('post_create');
         Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('post_update');
         Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('post_delete');
