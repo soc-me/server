@@ -20,9 +20,9 @@ class PostController extends Controller
         $postObjects = Post::orderBy('created_at', 'desc')->get();
         $userController = new UserController();
         $postObjects = $userController->addUserData($postObjects);
+        $likeController = new LikeController();
         foreach($postObjects as $postObject){
             // get the like count of each post
-            $likeController = new LikeController();
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
             // if the user is logged in, check if the posts are liked by the user
             if(Auth::user()){
@@ -48,7 +48,11 @@ class PostController extends Controller
         $fields['likeCount'] = 0;
         $postObject = Post::create($fields);
         $userController = new UserController();
-        $postObjects = $userController->addUserData([$postObject]);  // this function requires an array
+        $postObjects = $userController->addUserData([$postObject]);  // this function requires an array and returns one
+        // checks whether the user has liked the post and adds the like count
+        $likeController = new LikeController();
+        $postObjects[0]['liked'] = $likeController->likeCheck($postObjects[0]->id, $fields['user_id']);
+        $postObjects[0]['likeCount'] = $likeController->calculateLikes($postObjects[0]->id);
         $response = [
             'status'=> 'OK',
             'postObject'=> $postObjects[0]
@@ -159,6 +163,26 @@ class PostController extends Controller
         }
         $response = [
             'postObjects' => $postObjects,
+        ];
+        return response($response, 200);
+    }
+
+    // Show minimal post data
+    public function showMinimal(Request $request, string $post_ID)
+    {
+        // find post with post id
+        $postObject = Post::where('id', $post_ID)->first();
+        $userController = new UserController();
+        $postObject = $userController->addUserData([$postObject])[0];  // this function requires an array and returns one
+        // checks whether the user has liked the post and adds the like count
+        $userObject = Auth::user();
+        $likeController = new LikeController();
+        if($userObject){
+            $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
+        }
+        $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+        $response = [
+            'postObject' => $postObject
         ];
         return response($response, 200);
     }

@@ -35,14 +35,16 @@ class FollowController extends Controller
         $follow = new Follow();
         $follow->to_user_id = $to_user_id;
         $follow->from_user_id = $from_user_id;
-        $follow->accepted = True;  //remove
+        // check whether the users profile is private and set the accepted status accordingly
+        $to_userObject = User::find($to_user_id);
+        if($to_userObject->is_private == True){
+            $follow->accepted = False;
+        }else{
+            $follow->accepted = True;
+        }
         $follow->save();
-        // recalculate the follower and following count of the users -> removed since will be calculated on the fly
-        // $this->followCalculator($follow->to_user_id);
-        // $this->followCalculator($follow->from_user_id);
-        //temp =====
         return response()->json([
-            'response' => 'following'  //change to 'null' 
+            'response' => ($to_userObject->is_private == True) ? 'requested' : 'following'
         ], 200);
     }
 
@@ -58,10 +60,6 @@ class FollowController extends Controller
         }
         $followObject->accepted = True;
         $followObject->save();
-        // recalculate the follower and following count of the users  -> removed since will be calculated on the fly
-        // $this->followCalculator($followObject->to_user_id);
-        // $this->followCalculator($followObject->from_user_id);
-        //response
         return response()->json([
             'response' => 'following'
         ], 200);
@@ -114,11 +112,7 @@ class FollowController extends Controller
                 'message' => 'Does not exists'
             ], 404);
         }
-        // delete first!
         $followObject->delete();
-        // recalculate the follower and following count of the users -> removed since will be calculated on the fly
-        // $this->followCalculator($followObject->to_user_id);
-        // $this->followCalculator($followObject->from_user_id);
         //response
         return response()->json([
             'response' => "null",
