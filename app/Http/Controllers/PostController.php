@@ -101,7 +101,7 @@ class PostController extends Controller
         // current user
         $currUserObject = Auth::user();
         // user perms check
-        if($userObject->is_private && $userObject !== $currUserObject){
+        if($userObject->is_private && $userObject != $currUserObject){
             // if private and the user is not logged in return an err
             if(!$currUserObject){
                 $reponse  = [
@@ -186,11 +186,12 @@ class PostController extends Controller
     public function postsByUser(string $id){
         $userObject = User::find($id);
         $currUserObject = Auth::user();
-        if($userObject->is_private && $currUserObject !== $userObject){
+        if($userObject->is_private && $currUserObject != $userObject){
             // if the user is not logged in, return an err
             if(!$currUserObject){
                 $response = [
                     'notAllowed' => true,
+                    'message' => 'You are not logged in'
                 ];
                 return response($response, 401);
             }
@@ -202,6 +203,7 @@ class PostController extends Controller
             if(!$followObject){
                 $response = [
                     'notAllowed' => true,
+                    'message' => 'You are not following this user',
                 ];
                 return response($response, 200);
             }
