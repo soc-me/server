@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Follow;
 use App\Models\Like;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +26,26 @@ class LikeController extends Controller
      */
     public function store(Request $request, string $postID)
     {
+        // getting the user object of the creator
+        $post = Post::find($postID);
+        if(!$post){
+            return response([
+                'status' => 'post not found'
+            ], 404);
+        }
+        $userObject = User::where('id', $post->user_id)->first();
+        // if the user's account is private, checking whether the user is following the creator
+        if($userObject->private){
+            $followObject = Follow::where('to_user_id', $userObject->id)
+                ->where('from_user_id', Auth::user()->id)
+                ->first();
+            if(!$followObject){
+                return response([
+                    'notAllowed' =>true,
+                    'message' => 'You are not following the owner of this post'
+                ], 401);
+            }
+        }
         //checking whether a like already exists
         $likeObject = Like::where('user_id', Auth::user()->id)->where('post_id', $postID)->first();
         if($likeObject){
@@ -36,8 +58,6 @@ class LikeController extends Controller
             'user_id' => Auth::user()->id,
             'post_id' => $postID
         ]);
-        // calculate likes on the post  -> removed since will be calculated on the fly
-        // $this->calculateLikes($fields['post_id']);
         return response([
             'likeObject' => $likeObject
         ], 200);
@@ -72,30 +92,9 @@ class LikeController extends Controller
         foreach($likeObject as $like){
             $like->delete();
         }
-        // calculate likes on the post -> removed since will be calculated on the fly
-        // $this->calculateLikes($likeObject->post_id);
         return response([
             'status' => 'deleted'
         ], 200);
-    }
-
-    //Checks whether a user has liked the post===== deprecated
-    public function userLiked(string $postID)
-    {
-        $userObject = Auth::user();
-        $likeObjects = Like::where('post_id', $postID)
-            ->where('user_id', $userObject->id)
-            ->get();
-        //if the user has liked the post
-        if($likeObjects->count() > 0){
-            return response([
-                'liked' => true
-            ], 200);
-        }else{
-            return response([
-                'liked' => false
-            ], 200);
-        }
     }
 
     //helper function: calculate likes on a post
