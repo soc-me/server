@@ -41,4 +41,19 @@ class RegisteredUserController extends Controller
 
         return response()->noContent();
     }
+
+    /**
+     * Handle an incoming delete request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function destroy(Request $request): Response
+    {
+        $currUser = Auth::user();
+        $currUser->delete();
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return response()->noContent();
+    }
 }

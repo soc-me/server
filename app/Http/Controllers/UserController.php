@@ -68,6 +68,7 @@ class UserController extends Controller
         $fields = $request->validate([
             'bio' => ['string', 'max:500'],
             'image' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+            'is_private' => ['boolean'],
         ]);
         $user = User::find($id);
         if ($request->hasFile('image')) {
@@ -82,10 +83,11 @@ class UserController extends Controller
             $fields['imageURL'] = '/public/user/' . $name;
             $user->imageURL = $fields['imageURL'];
         }
-        $extra = [];
         if (isset($fields['bio'])) {
             $user->bio = $fields['bio'];
-            $extra['bio'] = $fields['bio'];
+        }
+        if(isset($fields['is_private'])){
+            $user->is_private = $fields['is_private'];
         }
         $user->save();
         return response(['message' => 'User updated', 'extra' => $fields], 200);
