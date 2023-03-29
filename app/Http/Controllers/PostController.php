@@ -120,7 +120,7 @@ class PostController extends Controller
                     'notAllowed' => true,
                     'message' => 'You are not following this user'
                 ];
-                return response($reponse, 200);
+                return response($reponse, 401);
             }
         }
         // add meta data
@@ -145,7 +145,7 @@ class PostController extends Controller
         //Checking whether the current user is the object owner
         $postObject = Post::find($id);
         $userID = Auth::user()->id;
-        if($postObject.value('createdByUser_Key')!=$userID){
+        if($postObject.value('user_id')!=$userID){
             return response(401);
         }
         //Updating the table
@@ -169,7 +169,7 @@ class PostController extends Controller
         //Checking whether the current user is the object owner
         $postObject = Post::find($id);
         $userID = Auth::user()->id;
-        if($postObject.value('createdByUser_Key')!=$userID){
+        if($postObject.value('user_id')!=$userID){
             return response(401);
         }
         // Deleting the object
@@ -259,7 +259,7 @@ class PostController extends Controller
     }
 
     /**
-     * Returns minimal data about a post if private (for SEO) ================================================
+     * Returns minimal data about a post (for SEO) ================================================
      */
     public function showMinimal(Request $request, string $post_ID)
     {

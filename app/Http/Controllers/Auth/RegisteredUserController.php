@@ -31,7 +31,8 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'isAdmin' => False,
-            'bio' => "Hi there. I'm a new user."
+            'bio' => "Hi there. I'm a new user.",
+            'imageURL' => "/default/newAccount.png"
         ]);
 
         event(new Registered($user));

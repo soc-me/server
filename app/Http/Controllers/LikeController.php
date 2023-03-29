@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class LikeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource. =======================================================
      */
     public function index()
     {
@@ -22,7 +22,7 @@ class LikeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage. =======================================================
      */
     public function store(Request $request, string $postID)
     {
@@ -64,7 +64,7 @@ class LikeController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource. =======================================================
      */
     public function show(string $id)
     {
@@ -72,7 +72,7 @@ class LikeController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage. =======================================================
      */
     public function update(Request $request, string $id)
     {
@@ -82,7 +82,7 @@ class LikeController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage. =======================================================
      */
     public function destroy(Request $request, string $postID)
     {
@@ -97,7 +97,7 @@ class LikeController extends Controller
         ], 200);
     }
 
-    //helper function: calculate likes on a post
+    //helper function: calculate likes on a post    =======================================================
     public function calculateLikes(string $postID)
     {
         return Like::where('post_id', $postID)->count();
