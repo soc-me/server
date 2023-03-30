@@ -118,6 +118,22 @@ class FollowController extends Controller
             'response' => "null",
         ], 200);
     }
+    
+    /**
+    * Get the number of follow requests of a user
+    */
+    public function getFollowRequestCount(Request $request, string $user_id){
+        $currUser = Auth::user();
+        if($currUser->id != $user_id || $currUser->is_private == False){
+            return response()->json([
+                'message' => !$currUser->is_private ? 'Not a private account' : 'You are not authorized to view this' 
+            ], 400);
+        }
+        $response = [
+            'requestCount' => Follow::where('to_user_id', $user_id)->where('accepted', False)->count()
+        ];
+        return response()->json($response, 200);
+    }
 
     //helper function: recalculate the follower and following count of a user
     public function followers_Calculator(string $user_id){
