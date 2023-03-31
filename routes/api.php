@@ -74,7 +74,8 @@ Route::prefix('follow')->controller(FollowController::class)->group(function(){
     Route::get('/followers/{id}', 'followers')->name('followers');
     Route::get('/following/{id}', 'following')->name('following');
     Route::get('/requests/{id}', 'requests')->name('requests');
-    Route::put('/accept/{id}', 'accept')->middleware('auth:sanctum')->name('accept');
+    Route::put('/accept/{from_user_id}', 'accept')->middleware('auth:sanctum')->name('accept');
     Route::put('/reject/{id}', 'reject')->middleware('auth:sanctum')->name('reject');
     Route::get('/followrequests_count/{user_id}', 'getFollowRequestCount')->name('followrequests_count');
+    Route::get('/pendingrequests/{user_id}', 'getPendingRequests')->name('pendingrequests');
 });

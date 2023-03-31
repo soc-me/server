@@ -49,10 +49,14 @@ class FollowController extends Controller
     }
 
     //Accept a follow request
-    public function accept(Request $request, string $followID)
+    public function accept(Request $request, string $from_user_id)
     {
-        $followObject = Follow::find('id', $followID)->first();
-        if($followObject->to_user_id != Auth::user()->id || $followObject->accepted == True || !$followObject){
+        $from_user_id = intval($from_user_id);
+        $followObject = Follow::where('from_user_id', $from_user_id)
+            ->where('to_user_id', Auth::user()->id)
+            ->where('accepted', False)
+            ->first();
+        if($followObject->accepted == True || !$followObject){
             return response()->json([
                 'message' => 'You are not authorized to accept this follow request',
                 'completion' => False
@@ -133,6 +137,30 @@ class FollowController extends Controller
             'requestCount' => Follow::where('to_user_id', $user_id)->where('accepted', False)->count()
         ];
         return response()->json($response, 200);
+    }
+
+    /**
+    * Get a user's pending follow requests
+    */
+    public function getPendingRequests(string $user_id)
+    {
+        $currUser = Auth::user();
+        if($currUser->id != $user_id || $currUser->is_private == False){
+            return response()->json([
+                'message' => !$currUser->is_private ? 'Not a private account' : 'You are not authorized to view this' 
+            ], 400);
+        }
+        // get the users where the current user is the to_user_id and the request is not accepted
+        $userObjects = Follow::where('to_user_id', $user_id)->where('accepted', False)
+            ->join('users', 'users.id', '=', 'follows.from_user_id')
+            ->orderBy('follows.created_at', 'desc')
+            ->select('users.*')
+            ->get();
+
+        $response = [
+            'userObjects' => $userObjects
+        ];
+        return response($response, 200);
     }
 
     //helper function: recalculate the follower and following count of a user

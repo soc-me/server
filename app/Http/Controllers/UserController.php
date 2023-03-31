@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Follow;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -88,6 +89,11 @@ class UserController extends Controller
         }
         if(isset($fields['is_private'])){
             $user->is_private = $fields['is_private'];
+            // to do: when a user makes their account public, all their unaccepted follow requests should be deleted
+            $pendingFollowRequests = Follow::where('to_user_id', $id)->where('accepted', false)->get();
+            $pendingFollowRequests->each(function ($pendingFollowRequest) {
+                $pendingFollowRequest->delete();
+            });
         }
         $user->save();
         return response(['message' => 'User updated', 'extra' => $fields], 200);
