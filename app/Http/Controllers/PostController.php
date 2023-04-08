@@ -164,20 +164,39 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage. ================================================
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $post_id)
     {
         //Checking whether the current user is the object owner
-        $postObject = Post::find($id);
+        $postObject = Post::find($post_id);
         $userID = Auth::user()->id;
-        if($postObject.value('user_id')!=$userID){
-            return response(401);
+        if(!$postObject){
+            $response = [
+                'status' => 'Not Found'
+            ];
+            return response($response, 404);
         }
-        // Deleting the object
-        $postObject->delete();
-        $response = [
-            'status'=> 'OK'
-        ];
-        return response($response, 200);
+        //Get asAdmin from the request
+        $asAdmin = $request->input('asAdmin');
+        if($asAdmin && Auth::user()->isAdmin){
+            $postObject->delete();
+            $response = [
+                'status' => 'OK'
+            ];
+            return response($response, 200);
+        }
+        else if($postObject->user_id == $userID){
+            $postObject->delete();
+            $response = [
+                'status' => 'OK'
+            ];
+            return response($response, 200);
+        }
+        else{
+            $response = [
+                'status' => 'Unauthorized'
+            ];
+            return response($response, 401);
+        }
     }
 
     /**
