@@ -39,6 +39,7 @@ Route::prefix('post')->group(function(){
         Route::delete('/delete/{post_id}', 'destroy')->middleware('auth:sanctum')->name('post_delete');
         Route::get('/user/{id}', 'postsByUser')->name('posts_by_user');
         Route::get('/minimal/{post_ID}', 'showMinimal')->name('post_show_minimal');
+        Route::get('/{post_ID}', 'show')->name('post_show');
     });
 });
 

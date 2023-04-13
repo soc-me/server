@@ -309,7 +309,9 @@ class PostController extends Controller
         }else{
             //return a message saying that the post is private
             $response = [
-                'postObject' => null,
+                'postObject' => [
+                    'id' => $postObject->id,
+                ],
                 'is_private' => true,
             ];
         }
