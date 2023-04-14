@@ -45,6 +45,7 @@ class PostController extends Controller
                 ->select('posts.*')
                 ->get();
         }
+        //
         // add post meta data
         $userController = new UserController();
         $likeController = new LikeController();
