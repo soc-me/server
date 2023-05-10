@@ -78,7 +78,7 @@ class PostController extends Controller
         $fields['likeCount'] = 0;
         $postObject = Post::create($fields);
         $userController = new UserController();
-        $postObjects = $userController->addUserData([$postObject]);  // this function requires an array and returns one
+        $postObjects = $userController->addUserData([$postObject]);  // this function requires an array and returns an array
         // checks whether the user has liked the post and adds the like count
         $likeController = new LikeController();
         $postObjects[0]['liked'] = $likeController->likeCheck($postObjects[0]->id, $fields['user_id']);

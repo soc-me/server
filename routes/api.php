@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
@@ -79,4 +80,14 @@ Route::prefix('follow')->controller(FollowController::class)->group(function(){
     Route::put('/reject/{id}', 'reject')->middleware('auth:sanctum')->name('reject');
     Route::get('/followrequests_count/{user_id}', 'getFollowRequestCount')->name('followrequests_count');
     Route::get('/pendingrequests/{user_id}', 'getPendingRequests')->name('pendingrequests');
+});
+
+// Commment routes
+Route::prefix('comment')->controller(CommentController::class)->group(function(){
+    Route::get('/all', 'index')->name('comment_all');
+    Route::get('/{id}', 'show')->name('comment_show');
+    Route::post('/create/{postID}', 'store')->middleware('auth:sanctum')->name('comment_create');
+    Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('comment_update');
+    Route::delete('/delete/{comment_ID}', 'destroy')->middleware('auth:sanctum')->name('comment_delete');
+    Route::get('/post/{postID}', 'commentsByPost')->name('comments_by_post');
 });
