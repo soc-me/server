@@ -61,7 +61,8 @@ class PostController extends Controller
         }
         //response
         $response = [
-            'postObjects' => $postObjects
+            'postObjects' => $postObjects,
+            'allPosts' => Post::all(),
         ];
         return response($response, 200);
     }
