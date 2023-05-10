@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comment;
+use App\Models\Follow;
+use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,6 +29,20 @@ class CommentController extends Controller
         ]);
         $fields['user_id'] = Auth::user()->id;   
         $fields['post_id'] = $postID;
+        // Check whether the user is private. If so, user must be following the poster
+        $postObject = Post::find($postID);
+        $userObject = User::find($postObject->user_id);
+        if($userObject->private){
+            $followObject = Follow::where('to_user_id', $userObject->id)
+                ->where('from_user_id', Auth::user()->id)
+                ->first();
+            if(!$followObject){
+                return response([
+                    'notAllowed' =>true,
+                    'message' => 'You are not following the owner of this post'
+                ], 401);
+            }
+        }
         $commentObject = Comment::create($fields);
         return response($commentObject, 201);
     }
@@ -35,8 +52,18 @@ class CommentController extends Controller
     */
     public function commentsByPost(string $postID)
     {
-        $comments = Comment::where('post_id', $postID)->get();
-        return response($comments, 200);
+        $commentObjects = Comment::where('post_id', $postID)->get();
+        //Add user data
+        $userController = new UserController();
+        foreach($commentObjects as $commentObject){
+            $commentObject = $userController->addUserData([$commentObject])[0];
+        }
+        if($commentObjects->isEmpty()){
+            return response(['noComments' => True], 404);
+        }
+        return response([
+            'commentObjects' => $commentObjects
+        ], 200);
     }
 
     /**
@@ -58,13 +85,38 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $comment_ID)
+    public function destroy(Request $request, string $comment_ID)
     {
-        $currUserObject = Auth::user();
-        if($currUserObject->id != Comment::find($comment_ID)->user_id){
-            return response(['message' => 'Unauthorized'], 401);
+        //Checking whether the current user is the object owner
+        $commentObject = Comment::find($comment_ID);
+        $userID = Auth::user()->id;
+        if(!$commentObject){
+            $response = [
+                'status' => 'Not Found'
+            ];
+            return response($response, 404);
         }
-        Comment::destroy($comment_ID);
-        return response(['message' => 'Comment deleted'], 200);
+        //Get asAdmin from the request
+        $asAdmin = $request->input('asAdmin');
+        if($asAdmin && Auth::user()->isAdmin){
+            $commentObject->delete();
+            $response = [
+                'status' => 'OK'
+            ];
+            return response($response, 200);
+        }
+        else if($commentObject->user_id == $userID){
+            $commentObject->delete();
+            $response = [
+                'status' => 'OK'
+            ];
+            return response($response, 200);
+        }
+        else{
+            $response = [
+                'status' => 'Unauthorized'
+            ];
+            return response($response, 401);
+        }
     }
 }
