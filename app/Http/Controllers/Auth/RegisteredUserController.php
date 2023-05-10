@@ -30,10 +30,12 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'isAdmin' => False,
-            'bio' => "Hi there. I'm a new user.",
-            'is_private' => True,
         ]);
+        //set user bio
+        $user->bio = 'Hello, I am new here!';
+        $user->is_private = False;
+        $user->isAdmin = False;
+        $user->save();
 
         event(new Registered($user));
 
