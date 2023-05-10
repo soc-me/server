@@ -69,7 +69,7 @@ class UserController extends Controller
         $fields = $request->validate([
             'bio' => ['string', 'max:500'],
             'image' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
-            'is_private' => ['boolean'],
+            'is_private' => ['string', 'max:5'],
         ]);
         $user = User::find($id);
         if ($request->hasFile('image')) {
@@ -88,7 +88,11 @@ class UserController extends Controller
             $user->bio = $fields['bio'];
         }
         if(isset($fields['is_private'])){
-            $user->is_private = $fields['is_private'];
+            if($fields['is_private'] == 'true'){
+                $user->is_private = true;
+            }else{
+                $user->is_private = false;
+            }
             // to do: when a user makes their account public, all their unaccepted follow requests should be deleted
             $pendingFollowRequests = Follow::where('to_user_id', $id)->where('accepted', false)->get();
             $pendingFollowRequests->each(function ($pendingFollowRequest) {
@@ -96,7 +100,7 @@ class UserController extends Controller
             });
         }
         $user->save();
-        return response(['message' => 'User updated', 'extra' => $fields], 200);
+        return response(['message' => 'User updated', 'changedFields' => $fields], 200);
     }
 
     /**
