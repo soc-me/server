@@ -165,7 +165,7 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage. ================================================
      */
-    public function destroy(Request $request, string $post_id)
+    public function destroy(Request $request, string $post_id, string $asAdmin)
     {
         //Checking whether the current user is the object owner
         $postObject = Post::find($post_id);
@@ -177,7 +177,12 @@ class PostController extends Controller
             return response($response, 404);
         }
         //Get asAdmin from the request
-        $asAdmin = $request->input('asAdmin');
+        if($asAdmin=='true'){
+            $asAdmin = True;
+        }
+        else if ($asAdmin=='false'){
+            $asAdmin = False;
+        }
         if($asAdmin && Auth::user()->isAdmin){
             $postObject->delete();
             $response = [
@@ -185,7 +190,7 @@ class PostController extends Controller
             ];
             return response($response, 200);
         }
-        else if($postObject->user_id == $userID){
+        else if($postObject->user_id == $userID && $asAdmin==False){
             $postObject->delete();
             $response = [
                 'status' => 'OK'
@@ -194,7 +199,7 @@ class PostController extends Controller
         }
         else{
             $response = [
-                'status' => 'Unauthorized'
+                'status' => 'Not Allowed'
             ];
             return response($response, 401);
         }

@@ -57,7 +57,7 @@ class CommentController extends Controller
     */
     public function commentsByPost(string $postID)
     {
-        $commentObjects = Comment::where('post_id', $postID)->get();
+        $commentObjects = Comment::where('post_id', $postID)->orderBy('created_at', 'asc')->get();
         //Add user data
         $userController = new UserController();
         foreach($commentObjects as $commentObject){
@@ -90,7 +90,7 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, string $comment_ID)
+    public function destroy(Request $request, string $comment_ID, string $asAdmin)
     {
         //Checking whether the current user is the object owner
         $commentObject = Comment::find($comment_ID);
@@ -102,18 +102,23 @@ class CommentController extends Controller
             return response($response, 404);
         }
         //Get asAdmin from the request
-        $asAdmin = $request->input('asAdmin');
+        if($asAdmin=='true'){
+            $asAdmin = True;
+        }
+        else if ($asAdmin=='false'){
+            $asAdmin = False;
+        }
         if($asAdmin && Auth::user()->isAdmin){
             $commentObject->delete();
             $response = [
-                'status' => 'OK'
+                'status' => 'OK',
             ];
             return response($response, 200);
         }
-        else if($commentObject->user_id == $userID){
+        else if($commentObject->user_id == $userID && $asAdmin==false){
             $commentObject->delete();
             $response = [
-                'status' => 'OK'
+                'status' => 'OK',
             ];
             return response($response, 200);
         }

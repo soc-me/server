@@ -37,7 +37,7 @@ Route::prefix('post')->group(function(){
         Route::get('/complete/{post_ID}', 'show')->name('post_show');
         Route::post('/create', 'store')->middleware('auth:sanctum')->name('post_create');
         Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('post_update');
-        Route::delete('/delete/{post_id}', 'destroy')->middleware('auth:sanctum')->name('post_delete');
+        Route::delete('/delete/{post_id}/{asAdmin}', 'destroy')->middleware('auth:sanctum')->name('post_delete');
         Route::get('/user/{id}', 'postsByUser')->name('posts_by_user');
         Route::get('/minimal/{post_ID}', 'showMinimal')->name('post_show_minimal');
         Route::get('/{post_ID}', 'show')->name('post_show');
@@ -88,6 +88,6 @@ Route::prefix('comment')->controller(CommentController::class)->group(function()
     Route::get('/{id}', 'show')->name('comment_show');
     Route::post('/create/{postID}', 'store')->middleware('auth:sanctum')->name('comment_create');
     Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('comment_update');
-    Route::delete('/delete/{comment_ID}', 'destroy')->middleware('auth:sanctum')->name('comment_delete');
+    Route::delete('/delete/{comment_ID}/{asAdmin}', 'destroy')->middleware('auth:sanctum')->name('comment_delete');
     Route::get('/post/{postID}', 'commentsByPost')->name('comments_by_post');
 });
