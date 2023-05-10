@@ -85,7 +85,7 @@ class PostController extends Controller
         $postObjects[0]['likeCount'] = $likeController->calculateLikes($postObjects[0]->id);
         $response = [
             'status'=> 'OK',
-            'postObject'=> $postObjects[0]
+            'returnObject'=> $postObjects[0]
         ];
         return response($response, 200);
     }

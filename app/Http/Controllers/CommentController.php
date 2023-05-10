@@ -44,7 +44,12 @@ class CommentController extends Controller
             }
         }
         $commentObject = Comment::create($fields);
-        return response($commentObject, 201);
+        //Add user data
+        $userController = new UserController();
+        $commentObject = $userController->addUserData([$commentObject])[0];
+        return response([
+            'returnObject' => $commentObject,
+        ], 201);
     }
 
     /**
