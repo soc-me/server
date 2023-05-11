@@ -41,6 +41,7 @@ Route::prefix('post')->group(function(){
         Route::get('/user/{id}', 'postsByUser')->name('posts_by_user');
         Route::get('/minimal/{post_ID}', 'showMinimal')->name('post_show_minimal');
         Route::get('/{post_ID}', 'show')->name('post_show');
+        Route::post('/search', 'search')->name('post_search');
     });
 });
 
@@ -63,6 +64,7 @@ Route::prefix('user')->group(function(){
         Route::post('/create', 'store')->name('user_create');
         Route::post('/update/{id}', 'update')->middleware('auth:sanctum')->name('user_update');
         Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('user_delete');
+        Route::post('/search', 'search')->name('user_search');
     });
 });
 

@@ -65,6 +65,72 @@ class PostController extends Controller
         ];
         return response($response, 200);
     }
+    /**
+    * Search Fn =====================================================================
+    */
+    public function search(Request $request)
+    {
+        if(!Auth::user()){
+            // get all the public accounts
+            $publicAccounts = User::where('is_private', False)->get();
+            // get posts by these accounts using a table join
+            $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+                ->whereIn('users.id', $publicAccounts->pluck('id'))
+                ->orderBy('posts.created_at', 'desc')
+                ->select('posts.*')
+                ->get();
+        }else{
+            // get all public accounts 
+            $publicAccounts = User::where('is_private', False)->get();
+            // get all following objects of the user
+            $followingObjects = Follow::where('from_user_id', Auth::user()->id)
+                ->where('accepted', True)
+                ->select('to_user_id')
+                ->get();
+            // get the following accounts
+            $followingAccounts = User::whereIn('id', $followingObjects->pluck('to_user_id'))->get();
+            // get posts of these accounts + current users posts
+            $allRequiredAccounts = $publicAccounts->merge($followingAccounts);
+            $allRequiredAccounts->push(Auth::user());
+            $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+                ->whereIn('users.id', $allRequiredAccounts->pluck('id'))
+                ->orderBy('posts.created_at', 'desc')
+                ->select('posts.*')
+                ->get();
+        }
+        //from the post objects get the post objects that match the search query without considering upper or lower case
+        $searchQuery = $request->input('query');
+        $postObjects = $postObjects->filter(function($postObject) use ($searchQuery){
+            return str_contains(strtolower($postObject->content), strtolower($searchQuery));
+        });
+        // this sometimes gives back data like {1:{}, 2:{}}, will convert this to [{}, {}]
+        $postObjects = $postObjects->values();
+        // order the posts by created_at
+        $postObjects = $postObjects->sortByDesc('created_at');
+        // add post meta data
+        if(count($postObjects)>0){
+            $userController = new UserController();
+            $likeController = new LikeController();
+            $postObjects = $userController->addUserData($postObjects);
+            foreach($postObjects as $postObject){
+                // get the like count of each post
+                $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+                // if the user is logged in, check if the posts are liked by the user
+                if(Auth::user()){
+                    $userObject = Auth::user();
+                    $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
+                }
+            }
+        }else{
+            $postObjects = [];
+        }
+        //response
+        $response = [
+            'objects' => $postObjects,
+            'query' => $searchQuery,
+        ];
+        return response($response, 200);
+    }
 
     /**
      * Store a newly created resource in storage. ================================================

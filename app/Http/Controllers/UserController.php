@@ -16,7 +16,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return response([
+            'objects' => User::all(),
+        ], 200);
     }
 
     /**
@@ -109,6 +111,16 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+    * Search fn
+    */
+    public function search(Request $request)
+    {
+        $searchQuery = $request->input('query');
+        $users = User::where('name', 'LIKE', '%' . $searchQuery . '%')->get();
+        return response(['objects' => $users], 200);
     }
 
     //Add user data to objects
