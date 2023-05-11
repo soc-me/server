@@ -43,8 +43,11 @@ class FollowController extends Controller
             $follow->accepted = True;
         }
         $follow->save();
+        // get the follows count of the user
+        $follows_count = $this->following_Calculator($to_user_id);
         return response()->json([
-            'response' => ($to_userObject->is_private == True) ? 'requested' : 'following'
+            'response' => ($to_userObject->is_private == True) ? 'requested' : 'following',
+            'followCount' => $follows_count
         ], 200);
     }
 
@@ -117,9 +120,12 @@ class FollowController extends Controller
             ], 404);
         }
         $followObject->delete();
+        // get the follows count of the user
+        $follows_count = $this->followers_Calculator($to_user_id);
         //response
         return response()->json([
             'response' => "null",
+            'followCount' => $follows_count
         ], 200);
     }
     
