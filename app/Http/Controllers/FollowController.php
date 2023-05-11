@@ -44,7 +44,7 @@ class FollowController extends Controller
         }
         $follow->save();
         // get the follows count of the user
-        $follows_count = $this->following_Calculator($to_user_id);
+        $follows_count = $this->followers_Calculator($to_user_id);
         return response()->json([
             'response' => ($to_userObject->is_private == True) ? 'requested' : 'following',
             'followCount' => $follows_count
