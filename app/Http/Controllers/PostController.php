@@ -308,7 +308,7 @@ class PostController extends Controller
             $likeController = new LikeController();
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
             // The page title will be the first 15 charachters from the html
-            $pageTitle = substr(strip_tags($postObject->content), 0, 20);
+            $pageTitle = substr(strip_tags($postObject->content), 0, 50);
             $response = [
                 'postObject' => $postObject,
                 'is_private' => false,
