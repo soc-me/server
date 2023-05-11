@@ -25,7 +25,7 @@ class CommentController extends Controller
     public function store(Request $request, string $postID)
     {
         $fields = $request->validate([
-            'content' => 'required|string|max:255',
+            'content' => 'required|string',
         ]);
         $fields['user_id'] = Auth::user()->id;   
         $fields['post_id'] = $postID;
