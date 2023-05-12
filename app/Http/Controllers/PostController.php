@@ -373,8 +373,13 @@ class PostController extends Controller
             $postObject = $userController->addUserData([$postObject])[0];
             $likeController = new LikeController();
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
-            // The page title will be the first 15 charachters from the html
-            $pageTitle = substr(strip_tags($postObject->content), 0, 50);
+            // The page title will be the first 15 charachters from the html. if there are no utf8 invalid charachters, the title will be 'Post | {username}'
+            $pageTitle = substr(strip_tags($postObject->content), 0, 15);
+            $isUTF8 = preg_match ('//u', $pageTitle);
+            if(!$isUTF8){
+                $pageTitle = 'Post | '.$userObject->name;
+            }
+            error_log($pageTitle);
             $response = [
                 'postObject' => $postObject,
                 'is_private' => false,
