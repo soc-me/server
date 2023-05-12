@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return ['Laravel' => app()->version()];
+    return response(null, 301)->header('Location', 'socme.thenu-kal.com');
 });
 
 require __DIR__.'/auth.php';
