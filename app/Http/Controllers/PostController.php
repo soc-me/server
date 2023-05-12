@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
+use App\Models\Comment;
 use App\Models\Follow;
 use App\Models\User;
 
@@ -58,6 +59,9 @@ class PostController extends Controller
                 $userObject = Auth::user();
                 $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
             }
+            // get comments on post
+            $commentCount = count(Comment::where('post_id', $postObject->id)->get());
+            $postObject['commentCount'] = $commentCount;
         }
         //response
         $response = [
@@ -120,6 +124,9 @@ class PostController extends Controller
                     $userObject = Auth::user();
                     $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
                 }
+                // get comments on post
+                $commentCount = count(Comment::where('post_id', $postObject->id)->get());
+                $postObject['commentCount'] = $commentCount;
             }
         }else{
             $postObjects = [];
@@ -198,6 +205,9 @@ class PostController extends Controller
         if($currUserObject){
             $postObject['liked'] = $likeController->likeCheck($postObject->id, $currUserObject->id);
         }
+        // get comments on post
+        $commentCount = count(Comment::where('post_id', $postObject->id)->get());
+        $postObject['commentCount'] = $commentCount;
         $response = [
             'postObject' => $postObject
         ];
@@ -379,7 +389,6 @@ class PostController extends Controller
             if(!$isUTF8){
                 $pageTitle = 'Post | '.$userObject->name;
             }
-            error_log($pageTitle);
             $response = [
                 'postObject' => $postObject,
                 'is_private' => false,
