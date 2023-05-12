@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification_Curr;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Notification;
 
@@ -14,7 +15,11 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user_id = $request->user()->id;
-        $notifications = Notification_Curr::where('notification_of_user_id', $user_id)->get();
+        $notifications = Notification_Curr::where('notification_of_user_id', $user_id)->orderBy('created_at', 'desc')->get();
+        // Add user image url to each notification
+        foreach ($notifications as $notification) {
+            $notification->imageURL = User::where('id', $notification->notification_from_user_id)->first()->imageURL;
+        }
         $response = [
             'message' => 'All notifications',
             'notificationObjects' => $notifications
