@@ -46,7 +46,6 @@ class PostController extends Controller
                 ->select('posts.*')
                 ->get();
         }
-        //
         // add post meta data
         $userController = new UserController();
         $likeController = new LikeController();
@@ -62,6 +61,9 @@ class PostController extends Controller
             // get comments on post
             $commentCount = count(Comment::where('post_id', $postObject->id)->get());
             $postObject['commentCount'] = $commentCount;
+            // checking whether the posts owner has a private account
+            $privateStatus = User::find($postObject->user_id)->is_private;
+            $postObject['privateStatus'] = $privateStatus;
         }
         //response
         $response = [
@@ -127,6 +129,9 @@ class PostController extends Controller
                 // get comments on post
                 $commentCount = count(Comment::where('post_id', $postObject->id)->get());
                 $postObject['commentCount'] = $commentCount;
+            // checking whether the posts owner has a private account
+            $privateStatus = User::find($postObject->user_id)->is_private;
+            $postObject['privateStatus'] = $privateStatus;
             }
         }else{
             $postObjects = [];
@@ -208,6 +213,9 @@ class PostController extends Controller
         // get comments on post
         $commentCount = count(Comment::where('post_id', $postObject->id)->get());
         $postObject['commentCount'] = $commentCount;
+        // checking whether the posts owner has a private account
+        $privateStatus = User::find($postObject->user_id)->is_private;
+        $postObject['privateStatus'] = $privateStatus;
         $response = [
             'postObject' => $postObject
         ];
@@ -322,6 +330,9 @@ class PostController extends Controller
             // get comment count
             $commentCount = count(Comment::where('post_id', $postObject->id)->get());
             $postObject['commentCount'] = $commentCount;
+            // checking whether the posts owner has a private account
+            $privateStatus = User::find($postObject->user_id)->is_private;
+            $postObject['privateStatus'] = $privateStatus;
         }     
         $response = [
             'postObjects' => $postObjects,
@@ -355,6 +366,9 @@ class PostController extends Controller
         foreach($postObjects as $postObject){
             $postObject['liked'] = $likeController->likeCheck( $postObject->id, $userObject->id);
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+            // checking whether the posts owner has a private account
+            $privateStatus = User::find($postObject->user_id)->is_private;
+            $postObject['privateStatus'] = $privateStatus;
         }
         $response = [
             'postObjects' => $postObjects,

@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PinnedPostController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Requests\Auth\LoginRequest;
@@ -101,4 +102,11 @@ Route::prefix('notification')->controller(NotificationController::class)->group(
     Route::get('/read/{notification_id}', 'read')->middleware('auth:sanctum')->name('notification_read');
     Route::put('/read_all', 'readAll')->middleware('auth:sanctum')->name('notification_read_all');
     Route::get('/unread_count', 'unreadCount')->middleware('auth:sanctum')->name('notification_unread_count');
+});
+
+// Pinned Post routes
+Route::prefix('pinned_post')->controller(PinnedPostController::class)->group(function(){
+    Route::get('/posts', 'index')->name('pinned_post_all');
+    Route::post('/create', 'store')->middleware('auth:sanctum')->name('pinned_post_create');
+    Route::delete('/remove/{pin_id}', 'destroy')->middleware('auth:sanctum')->name('pinned_post_delete');
 });
