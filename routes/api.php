@@ -107,6 +107,6 @@ Route::prefix('notification')->controller(NotificationController::class)->group(
 // Pinned Post routes
 Route::prefix('pinned_post')->controller(PinnedPostController::class)->group(function(){
     Route::get('/posts', 'index')->name('pinned_post_all');
-    Route::post('/create', 'store')->middleware('auth:sanctum')->name('pinned_post_create');
-    Route::delete('/remove/{pin_id}', 'destroy')->middleware('auth:sanctum')->name('pinned_post_delete');
+    Route::post('/pin/{post_id}', 'store')->middleware('auth:sanctum')->name('pinned_post_create');
+    Route::delete('/remove/{post_id}', 'destroy')->middleware('auth:sanctum')->name('pinned_post_delete');
 });
