@@ -42,6 +42,9 @@ class NotificationController extends Controller
         $notificationObject = new Notification_Curr();
         $notificationObject->notification_of_user_id = $notification_of_user_id;
         $notificationObject->notification_from_user_id = $notification_from_user_id;
+        if($notification_of_user_id == $notification_from_user_id){
+            return null;
+        }
         $notificationObject->on_post_id = $on_post_id;
         $notificationObject->message = $message;
         $notificationObject->type = $type;
