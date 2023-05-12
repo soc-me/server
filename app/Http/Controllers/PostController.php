@@ -385,6 +385,9 @@ class PostController extends Controller
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
             // The page title will be the first 20 charachters from the html. if there are no utf8 invalid charachters, the title will be 'Post | {username}'
             $pageTitle = substr(strip_tags($postObject->content), 0, 20);
+            // make sure that there are spaces between words and after periods
+            $pageTitle = preg_replace('/(?<=\w)(?=[A-Z])/'," $1", $pageTitle);
+            $pageTitle = preg_replace('/(?<=\.)(?=[A-Z])/'," $1", $pageTitle);
             if(strlen($pageTitle)==20){
                 $pageTitle = $pageTitle.'...';
             }
