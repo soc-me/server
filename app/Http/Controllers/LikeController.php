@@ -58,6 +58,20 @@ class LikeController extends Controller
             'user_id' => Auth::user()->id,
             'post_id' => $postID
         ]);
+        // create a new notification
+        $notification_of_user_id = $userObject->id;
+        $notification_from_user_id = Auth::user()->id;
+        $on_post_id = $postID;
+        $message = User::where('id', $notification_from_user_id)->first()->name . ' liked your post';
+        $type = 'like';
+        $notificationController = new NotificationController();
+        $notificationController->create(
+            $notification_of_user_id,
+            $notification_from_user_id,
+            $on_post_id,
+            $message,
+            $type
+        );
         return response([
             'likeObject' => $likeObject
         ], 200);

@@ -4,6 +4,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Requests\Auth\LoginRequest;
@@ -92,4 +93,11 @@ Route::prefix('comment')->controller(CommentController::class)->group(function()
     Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('comment_update');
     Route::delete('/delete/{comment_ID}/{asAdmin}', 'destroy')->middleware('auth:sanctum')->name('comment_delete');
     Route::get('/post/{postID}', 'commentsByPost')->name('comments_by_post');
+});
+
+//Notification routes
+Route::prefix('notification')->controller(NotificationController::class)->group(function(){
+    Route::get('/my_notifications', 'index')->middleware('auth:sanctum')->name('notification_all');
+    Route::get('/read/{notification_id}', 'read')->middleware('auth:sanctum')->name('notification_read');
+    Route::get('/read_all/{user_id}', 'readAll')->middleware('auth:sanctum')->name('notification_read_all');
 });

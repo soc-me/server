@@ -47,6 +47,20 @@ class CommentController extends Controller
         //Add user data
         $userController = new UserController();
         $commentObject = $userController->addUserData([$commentObject])[0];
+        //Create a new notification
+        $notification_of_user_id = $postObject->user_id;
+        $notification_from_user_id = $commentObject->user_id;
+        $on_post_id = $postObject->id;
+        $message = User::where('id', $notification_from_user_id)->first()->name . ' commented on your post';
+        $type = 'comment';
+        $notificationController = new NotificationController();
+        $notificationController->create(
+            $notification_of_user_id,
+            $notification_from_user_id,
+            $on_post_id,
+            $message,
+            $type
+        );
         return response([
             'returnObject' => $commentObject,
         ], 201);
