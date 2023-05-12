@@ -99,5 +99,6 @@ Route::prefix('comment')->controller(CommentController::class)->group(function()
 Route::prefix('notification')->controller(NotificationController::class)->group(function(){
     Route::get('/my_notifications', 'index')->middleware('auth:sanctum')->name('notification_all');
     Route::get('/read/{notification_id}', 'read')->middleware('auth:sanctum')->name('notification_read');
-    Route::get('/read_all', 'readAll')->middleware('auth:sanctum')->name('notification_read_all');
+    Route::put('/read_all', 'readAll')->middleware('auth:sanctum')->name('notification_read_all');
+    Route::get('/unread_count', 'unreadCount')->middleware('auth:sanctum')->name('notification_unread_count');
 });

@@ -76,9 +76,31 @@ class NotificationController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function readAll(Request $request)
     {
-        //
+        $notificationObjects = Notification_Curr::where('notification_of_user_id', $request->user()->id)->get();
+        //Set all notifications to read
+        foreach ($notificationObjects as $notificationObject) {
+            $notificationObject->is_read = true;
+            $notificationObject->save();
+        }
+        $response = [
+            'message' => 'All notifications read'
+        ];
+        return response($response, 200);
+    }
+
+    /**
+     * Unread notifs count
+     */
+    public function unreadCount(Request $request)
+    {
+        $unreadCount = Notification_Curr::where('notification_of_user_id', $request->user()->id)->where('is_read', false)->count();
+        $response = [
+            'message' => 'Unread notifications count',
+            'unreadCount' => $unreadCount
+        ];
+        return response($response, 200);
     }
 
     /**
