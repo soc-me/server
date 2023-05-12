@@ -319,6 +319,9 @@ class PostController extends Controller
                 $postObject['liked'] = $likeController->likeCheck($postObject->id, $currUserObject->id);
             }
             $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+            // get comment count
+            $commentCount = count(Comment::where('post_id', $postObject->id)->get());
+            $postObject['commentCount'] = $commentCount;
         }     
         $response = [
             'postObjects' => $postObjects,
