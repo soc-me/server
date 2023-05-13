@@ -51,6 +51,10 @@ class RegisteredUserController extends Controller
      */
     public function destroy(Request $request): Response
     {
+        // Checks whether its the GUEST account
+        if (Auth::user()->name == 'GUEST') {
+            return response(['message' => 'Cannot delete the GUEST account'], 403);
+        }
         $currUser = Auth::user();
         $currUser->delete();
         Auth::guard('web')->logout();
