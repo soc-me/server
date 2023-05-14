@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Community;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,8 +17,25 @@ class CommunityController extends Controller
         $objects = Community::orderBy('created_at', 'desc')->get();
         $response = [
             'message' => 'List of all communities',
-            'data' => $objects
+            'objects' => $objects
         ];
+        $withPosts = [];
+        $withoutPosts = [];
+        // for each object get the time of the last post
+        foreach($objects as $object){
+            $lastPost = Post::where('community_id', $object->id)->orderBy('created_at', 'desc')->first();
+            if($lastPost){
+                $object->last_post_time = $lastPost->created_at;
+                array_push($withPosts, $object);
+            }else{
+                $object->last_post_time = null;
+                array_push($withoutPosts, $object);
+            }
+        }
+        usort($withPosts, function($a, $b) {
+            return $a->last_post_time < $b->last_post_time;
+        });
+        $response['objects'] = array_merge($withPosts, $withoutPosts);
         return response()->json($response, 200);
     }
 
@@ -26,19 +44,23 @@ class CommunityController extends Controller
      */
     public function store(Request $request)
     {
-        $fields = [
+        $fields = $request->validate([
             'community_name' =>['required', 'string', 'max:20', 'min:2', 'unique:communities'],
-            'community_description' => ['required', 'string', 'max:255'],
-            'community_icon_image_url' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
-            'community_banner_image_url' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
-            'hide_posts_from_home' => 'required|boolean'
-        ];
+            'community_description' => ['required', 'string', 'max:255', 'min:2'],
+            // 'community_icon_image_url' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+            // 'community_banner_image_url' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+            'hide_posts_from_home' => ['string', 'max:6', 'min:4', 'in:HIDE,UNHIDE', 'required']
+        ]);
+        if($fields['hide_posts_from_home'] == 'HIDE'){
+            $fields['hide_posts_from_home'] = true;
+        }else if($fields['hide_posts_from_home'] == 'UNHIDE'){
+            $fields['hide_posts_from_home'] = false;
+        }
+        $fields['owner_user_id'] = Auth::user()->id;
         $newObject = Community::create($fields);
-        $newObject->owner_user_id = Auth::user()->id;
-        $newObject->save();
         $response = [
             'message' => 'Community created successfully',
-            'communityObject' => $newObject
+            'object' => $newObject
         ];
         return response()->json($response, 201);
     }
@@ -54,7 +76,7 @@ class CommunityController extends Controller
         }
         $response = [
             'message' => 'Community details by ID',
-            'data' => $object
+            'object' => $object
         ];
         return response()->json($response, 200);
     }
@@ -94,7 +116,7 @@ class CommunityController extends Controller
         $object->save();
         $response = [
             'message' => 'Community updated successfully',
-            'communityObject' => $object
+            'object' => $object
         ];
         return response()->json($response, 200);
     }
@@ -115,7 +137,7 @@ class CommunityController extends Controller
         $object->delete();
         $response = [
             'message' => 'Community deleted successfully',
-            'communityObject' => $object
+            'object' => $object
         ];
         return response()->json($response, 200);
     }
