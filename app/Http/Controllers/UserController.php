@@ -95,7 +95,7 @@ class UserController extends Controller
             }else{
                 $user->is_private = false;
             }
-            // to do: when a user makes their account public, all their unaccepted follow requests should be deleted
+            //when a user makes their account public, all their unaccepted follow requests should be deleted
             $pendingFollowRequests = Follow::where('to_user_id', $id)->where('accepted', false)->get();
             $pendingFollowRequests->each(function ($pendingFollowRequest) {
                 $pendingFollowRequest->delete();

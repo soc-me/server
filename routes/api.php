@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
@@ -45,6 +46,7 @@ Route::prefix('post')->group(function(){
         Route::get('/{post_ID}', 'show')->name('post_show');
         Route::post('/search', 'search')->name('post_search');
         Route::get('/page_title/{post_ID}', 'getPageTitle')->name('post_page_title');
+        Route::get('/community/{community_id}', 'communityPosts')->name('posts_by_community');
     });
 });
 
@@ -110,4 +112,14 @@ Route::prefix('pinned_post')->controller(PinnedPostController::class)->group(fun
     Route::get('/posts', 'index')->name('pinned_post_all');
     Route::post('/pin/{post_id}', 'store')->middleware('auth:sanctum')->name('pinned_post_create');
     Route::delete('/remove/{post_id}', 'destroy')->middleware('auth:sanctum')->name('pinned_post_delete');
+});
+
+// Community routes
+Route::prefix('community')->controller(CommunityController::class)->group(function(){
+    Route::get('/all', 'index')->name('community_all');
+    Route::get('/{id}', 'show')->name('community_show');
+    Route::post('/create', 'store')->middleware('auth:sanctum')->name('community_create');
+    Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('community_update');
+    Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('community_delete');
+    Route::get('/search', 'search')->name('community_search');
 });

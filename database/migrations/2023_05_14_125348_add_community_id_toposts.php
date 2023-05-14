@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pinned_posts', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-            $table->string('post_id')->ondelete('cascade');  // fix  this later
+        Schema::table('posts', function (Blueprint $table) {
+            $table->foreignId('community_id')->nullable()->constrained();
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pinned_posts');
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropColumn('community_id');
+        });
     }
 };

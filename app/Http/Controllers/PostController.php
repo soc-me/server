@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Models\Comment;
+use App\Models\Community;
 use App\Models\Follow;
 use App\Models\User;
 
@@ -475,5 +476,56 @@ class PostController extends Controller
             'pageTitle' => $pageTitle,
         ];
         return response($response, 200);
+    }
+
+    /*
+    * Returns the posts of a community ================================================
+    */
+    public function communityPosts(string $community_ID)
+    {
+        // get the community object
+        $communityObject = Community::find($community_ID);
+        // if the community does not exist, return an err
+        if(!$communityObject){
+            $response = [
+                'message' => 'Community not found',
+            ];
+            return response($response, 404);
+        }
+        // get all posts in that community
+        if(!Auth::user()){
+            // get all the public accounts
+            $publicAccounts = User::where('is_private', False)->get();
+            // get posts by these accounts using a table join and where the community id is the community id
+            $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+                ->whereIn('users.id', $publicAccounts->pluck('id'))
+                ->where('posts.community_id', $community_ID)
+                ->orderBy('posts.created_at', 'desc')
+                ->select('posts.*')
+                ->get();
+        }else{
+            // get all public accounts 
+            $publicAccounts = User::where('is_private', False)->get();
+            // get all following objects of the user
+            $followingObjects = Follow::where('from_user_id', Auth::user()->id)
+                ->where('accepted', True)
+                ->select('to_user_id')
+                ->get();
+            // get the following accounts
+            $followingAccounts = User::whereIn('id', $followingObjects->pluck('to_user_id'))->get();
+            // get posts of these accounts + current users posts
+            $allRequiredAccounts = $publicAccounts->merge($followingAccounts);
+            $allRequiredAccounts->push(Auth::user());
+            $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+                ->whereIn('users.id', $allRequiredAccounts->pluck('id'))
+                ->where('posts.community_id', $community_ID)
+                ->orderBy('posts.created_at', 'desc')
+                ->select('posts.*')
+                ->get();
+        }
+    $response = [
+        'postObjects' => $postObjects,
+    ];
+    return response($response, 200);
     }
 }
