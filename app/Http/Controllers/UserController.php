@@ -70,7 +70,7 @@ class UserController extends Controller
         }
         $fields = $request->validate([
             'bio' => ['string', 'max:500'],
-            'image' => ['image', 'max:10240', 'mimes:jpeg,png,jpg,gif,webp'],
+            'image' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
             'is_private' => ['string', 'max:5'],
         ]);
         $user = User::find($id);
