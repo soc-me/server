@@ -44,6 +44,7 @@ Route::prefix('post')->group(function(){
         Route::get('/minimal/{post_ID}', 'showMinimal')->name('post_show_minimal');
         Route::get('/{post_ID}', 'show')->name('post_show');
         Route::post('/search', 'search')->name('post_search');
+        Route::get('/page_title/{post_ID}', 'getPageTitle')->name('post_page_title');
     });
 });
 

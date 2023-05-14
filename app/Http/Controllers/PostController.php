@@ -425,8 +425,55 @@ class PostController extends Controller
                     'id' => $postObject->id,
                 ],
                 'is_private' => true,
+                'pageTitle' => 'Private Post | '.$userObject->name,
             ];
         }
+        return response($response, 200);
+    }
+
+    /*
+    * Returns the post title for private posts ================================================
+    */
+    public function getPageTitle(string $post_ID){
+        $ownerUserID = Post::where('id', $post_ID)->first()->user_id;
+        $userObject = User::find($ownerUserID);
+        $currUserObject = Auth::user();
+        if($userObject->is_private && $currUserObject != $userObject){
+            // if the user is not logged in, return an err
+            if(!$currUserObject){
+                $response = [
+                    'notAllowed' => true,
+                    'message' => 'You are not logged in'
+                ];
+                return response($response, 401);
+            }
+            // if the user is not following the user, return an err
+            $followObject = Follow::where('from_user_id', $currUserObject->id)
+                ->where('to_user_id', $ownerUserID)
+                ->where('accepted', True)
+                ->first();
+            if(!$followObject){
+                $response = [
+                    'notAllowed' => true,
+                    'message' => 'You are not following this user',
+                ];
+                return response($response, 200);
+            }
+        }
+        $postObject = Post::where('id', $post_ID)->first();
+        $pageTitle = substr(strip_tags($postObject->content), 0, 20);
+        $pageTitle = preg_replace('/(?<=\w)(?=[A-Z])/'," $1", $pageTitle);
+        $pageTitle = preg_replace('/(?<=\.)(?=[A-Z])/'," $1", $pageTitle);
+        if(strlen($pageTitle)==20){
+            $pageTitle = $pageTitle.'...';
+        }
+        $isUTF8 = preg_match ('//u', $pageTitle);
+        if(!$isUTF8){
+            $pageTitle = 'Post | '.$userObject->name;
+        }
+        $response = [
+            'pageTitle' => $pageTitle,
+        ];
         return response($response, 200);
     }
 }
