@@ -22,11 +22,16 @@ class PostController extends Controller
         if(!Auth::user()){
             // get all the public accounts
             $publicAccounts = User::where('is_private', False)->get();
-            // get posts by these accounts using a table join
+            // get posts by these accounts using a table join and get the community the post belongs to if there is one
             $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+                ->leftJoin('communities', 'posts.community_id', '=', 'communities.id')
                 ->whereIn('users.id', $publicAccounts->pluck('id'))
                 ->orderBy('posts.created_at', 'desc')
-                ->select('posts.*')
+                ->select('posts.*', 'communities.community_name', 'communities.hide_posts_from_home')
+                ->where(function($query){
+                    $query->where('communities.hide_posts_from_home', False)
+                        ->orWhereNull('communities.hide_posts_from_home');
+                })
                 ->get();
         }else{
             // get all public accounts 
@@ -42,9 +47,14 @@ class PostController extends Controller
             $allRequiredAccounts = $publicAccounts->merge($followingAccounts);
             $allRequiredAccounts->push(Auth::user());
             $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
-                ->whereIn('users.id', $allRequiredAccounts->pluck('id'))
+                ->leftJoin('communities', 'posts.community_id', '=', 'communities.id')
+                ->whereIn('users.id', $publicAccounts->pluck('id'))
                 ->orderBy('posts.created_at', 'desc')
-                ->select('posts.*')
+                ->select('posts.*', 'communities.community_name', 'communities.hide_posts_from_home')
+                ->where(function($query){
+                    $query->where('communities.hide_posts_from_home', False)
+                        ->orWhereNull('communities.hide_posts_from_home');
+                })
                 ->get();
         }
         // add post meta data
@@ -152,7 +162,19 @@ class PostController extends Controller
     {
         $fields = $request->validate([
             'content' => ['required', 'string'],
+            'community_id' => ['string', 'required'],
         ]);
+        $fields['community_id'] = (int)$fields['community_id'];
+        //if the community does not exist, return an err
+        if(!Community::find($fields['community_id']) && $fields['community_id']!=null){
+            $response = [
+                'status' => 'Not Found'
+            ];
+            return response($response, 404);
+        }
+        if($fields['community_id']==null){
+            $fields['community_id'] = 'null';
+        }
         $fields['user_id'] = Auth::user()->id;
         $fields['likeCount'] = 0;
         $postObject = Post::create($fields);
@@ -523,9 +545,28 @@ class PostController extends Controller
                 ->select('posts.*')
                 ->get();
         }
-    $response = [
-        'postObjects' => $postObjects,
-    ];
-    return response($response, 200);
+        // add post meta data
+        $userController = new UserController();
+        $likeController = new LikeController();
+        $postObjects = $userController->addUserData($postObjects);
+        foreach($postObjects as $postObject){
+            // get the like count of each post
+            $postObject['likeCount'] = $likeController->calculateLikes($postObject->id);
+            // if the user is logged in, check if the posts are liked by the user
+            if(Auth::user()){
+                $userObject = Auth::user();
+                $postObject['liked'] = $likeController->likeCheck($postObject->id, $userObject->id);
+            }
+            // get comments on post
+            $commentCount = count(Comment::where('post_id', $postObject->id)->get());
+            $postObject['commentCount'] = $commentCount;
+            // checking whether the posts owner has a private account
+            $privateStatus = User::find($postObject->user_id)->is_private;
+            $postObject['privateStatus'] = $privateStatus;
+        }
+        $response = [
+            'postObjects' => $postObjects,
+        ];
+        return response($response, 200);
     }
 }

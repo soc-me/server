@@ -12,7 +12,8 @@ class Post extends Model
     use HasFactory;
     protected $fillable = [
         'content',
-        'user_id'
+        'user_id',
+        'community_id',
     ];
 
     // Relationships
