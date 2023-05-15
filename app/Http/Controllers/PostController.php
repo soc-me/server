@@ -378,9 +378,14 @@ class PostController extends Controller
         $followingUserObjects->push($userObject);
         // getting the posts of the following users + the current user
         $postObjects = Post::join('users', 'posts.user_id', '=', 'users.id')
+            ->leftJoin('communities', 'posts.community_id', '=', 'communities.id')
             ->whereIn('users.id', $followingUserObjects->pluck('id'))
-            ->select('posts.*')
             ->orderBy('posts.created_at', 'desc')
+            ->select('posts.*', 'communities.community_name', 'communities.hide_posts_from_home')
+            ->where(function($query){
+                $query->where('communities.hide_posts_from_home', False)
+                ->orWhereNull('communities.hide_posts_from_home');
+            })
             ->get();
         // addding meta data
         $userController = new UserController();
