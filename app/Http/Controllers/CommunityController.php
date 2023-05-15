@@ -162,11 +162,7 @@ class CommunityController extends Controller
     public function search(Request $request)
     {
         $searchQuery = $request->input('query');
-        $object = Community::where('community_name', 'LIKE', '%'.$searchQuery['community_name'].'%')->get();
-        $response = [
-            'message' => 'Community details by name',
-            'objects' => $object
-        ];
-        return response()->json($response, 200);
+        $communities = Community::where('community_name', 'LIKE', '%' . $searchQuery . '%')->get();
+        return response(['objects' => $communities], 200);
     }
 }

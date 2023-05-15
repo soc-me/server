@@ -121,5 +121,5 @@ Route::prefix('community')->controller(CommunityController::class)->group(functi
     Route::post('/create', 'store')->middleware('auth:sanctum')->name('community_create');
     Route::post('/update/{id}', 'update')->middleware('auth:sanctum')->name('community_update');
     Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('community_delete');
-    Route::get('/search', 'search')->name('community_search');
+    Route::post('/search', 'search')->name('community_search');
 });
