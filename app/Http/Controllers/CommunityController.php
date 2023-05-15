@@ -91,13 +91,13 @@ class CommunityController extends Controller
         if(!Auth::user()->isAdmin && Auth::user()->id != $object->owner_user_id){
             return response(['message' => 'You are not authorized to edit this community'], 401);
         }
-        $fields = [
+        $fields = $request->validate([
             'community_name' =>[ 'string', 'max:20', 'min:2', 'unique:communities'],
             'community_description' => [ 'string', 'max:255'],
             'iconImage' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
             'bannerImage' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
-            'hide_posts_from_home' => 'boolean'
-        ];
+            'hide_posts_from_home' => ['string', 'max:6', 'min:4', 'in:true,false']
+        ]);
         if($request->has('community_name')){
             $object->community_name = $fields['community_name'];
         }
@@ -121,7 +121,11 @@ class CommunityController extends Controller
             $object->community_banner_image_url = $imageURL;
         }
         if($request->has('hide_posts_from_home')){
-            $object->hide_posts_from_home = $fields['hide_posts_from_home'];
+            if($fields['hide_posts_from_home'] == 'true'){
+                $object->hide_posts_from_home = true;
+            }else if($fields['hide_posts_from_home'] == 'false'){
+                $object->hide_posts_from_home = false;
+            }
         }
         $object->save();
         $response = [
@@ -137,7 +141,7 @@ class CommunityController extends Controller
     public function destroy(string $id)
     {
         $object = Community::find($id);
-        if(!Auth::user()->is_admin && Auth::user()->id != $object->owner_user_id){
+        if(!Auth::user()->isAdmin && Auth::user()->id != $object->owner_user_id){
             return response(['message' => 'You are not authorized to delete this community'], 401);
         }
         $object = Community::find($id);

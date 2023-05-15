@@ -173,7 +173,7 @@ class PostController extends Controller
             return response($response, 404);
         }
         if($fields['community_id']==null){
-            $fields['community_id'] = 'null';
+            $fields['community_id'] = null;
         }
         $fields['user_id'] = Auth::user()->id;
         $fields['likeCount'] = 0;
