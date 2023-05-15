@@ -84,33 +84,43 @@ class CommunityController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function update(string $id)
+    public function update(string $id, Request $request)
     {
         $object = Community::find($id);
         //check if user is admin or owner
-        if(!Auth::user()->is_admin && Auth::user()->id != $object->owner_user_id){
+        if(!Auth::user()->isAdmin && Auth::user()->id != $object->owner_user_id){
             return response(['message' => 'You are not authorized to edit this community'], 401);
         }
         $fields = [
             'community_name' =>[ 'string', 'max:20', 'min:2', 'unique:communities'],
             'community_description' => [ 'string', 'max:255'],
-            'community_icon_image_url' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
-            'community_banner_image_url' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+            'iconImage' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
+            'bannerImage' => ['image', 'max:2048', 'mimes:jpeg,png,jpg,gif,webp'],
             'hide_posts_from_home' => 'boolean'
         ];
-        if(isset($fields['community_name'])){
+        if($request->has('community_name')){
             $object->community_name = $fields['community_name'];
         }
-        if(isset($fields['community_description'])){
+        if($request->has('community_description')){
             $object->community_description = $fields['community_description'];
         }
-        if(isset($fields['community_icon_image_url'])){
-            $object->community_icon_image_url = $fields['community_icon_image_url'];
+        if($request->has('iconImage')){
+            $image = $request->file('iconImage');
+            $name = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('/public/community/icons/');
+            $image->move($destinationPath, $name);
+            $imageURL = '/public/community/icons/' . $name;
+            $object->community_icon_image_url = $imageURL;
         }
-        if(isset($fields['community_banner_image_url'])){
-            $object->community_banner_image_url = $fields['community_banner_image_url'];
+        if($request->has('bannerImage')){
+            $image = $request->file('bannerImage');
+            $name = time() . '.' . $image->getClientOriginalExtension();
+            $destinationPath = public_path('/public/community/banners/');
+            $image->move($destinationPath, $name);
+            $imageURL = '/public/community/banners/' . $name;
+            $object->community_banner_image_url = $imageURL;
         }
-        if(isset($fields['hide_posts_from_home'])){
+        if($request->has('hide_posts_from_home')){
             $object->hide_posts_from_home = $fields['hide_posts_from_home'];
         }
         $object->save();

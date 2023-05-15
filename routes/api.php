@@ -119,7 +119,7 @@ Route::prefix('community')->controller(CommunityController::class)->group(functi
     Route::get('/all', 'index')->name('community_all');
     Route::get('/data/{id}', 'show')->name('community_show');
     Route::post('/create', 'store')->middleware('auth:sanctum')->name('community_create');
-    Route::put('/update/{id}', 'update')->middleware('auth:sanctum')->name('community_update');
+    Route::post('/update/{id}', 'update')->middleware('auth:sanctum')->name('community_update');
     Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum')->name('community_delete');
     Route::get('/search', 'search')->name('community_search');
 });
